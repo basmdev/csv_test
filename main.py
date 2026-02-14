@@ -61,32 +61,40 @@ def calculate_average_gdp(data):
 
 
 # Dictionary of available reports with their corresponding functions
-REPORTS = {
+REPORT_TYPES = {
     "average-gdp": calculate_average_gdp,
 }
+
+
+def run_report(files, report_type):
+    """Run the report."""
+    data = load_csv(files)
+    if not data:
+        print("Data has not been loaded.")
+        return
+
+    report_type = REPORT_TYPES.get(report_type)
+    headers, rows = report_type(data)
+    print_as_table(headers, rows)
 
 
 def main():
     parser = argparse.ArgumentParser(
         description="Script for processing macroeconomic data from CSV files"
     )
-    parser.add_argument("-f", "--files", nargs="+", help="File names", required=True)
     parser.add_argument(
-        "-r", "--report", help="Report name", choices=REPORTS.keys(), required=True
+        "-f", "--files", nargs="+", help="File names", required=True
+    )
+    parser.add_argument(
+        "-r",
+        "--report",
+        help="Report name",
+        choices=REPORT_TYPES.keys(),
+        required=True,
     )
     args = parser.parse_args()
 
-    data = []
-
-    if args.files:
-        data = load_csv(args.files)
-
-    if not data:
-        print("Data has not been loaded.")
-        return
-
-    headers, rows = REPORTS[args.report](data)
-    print_as_table(headers, rows)
+    run_report(args.files, args.report)
 
 
 if __name__ == "__main__":
